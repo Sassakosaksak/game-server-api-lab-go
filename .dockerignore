@@ -1,0 +1,20 @@
+# Git管理情報とローカルの開発用設定はImage作成に不要
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# ローカルで作られた成果物やキャッシュはImageへ含めない
+bin/
+.cache/
+*.exe
+
+# 秘密値を含む可能性がある環境変数ファイルはImageへ含めない
+.env
+.env.*
+!.env.example
+
+# ドキュメントやOS固有のファイルは実行用Imageに不要
+README.md
+.DS_Store
+Thumbs.db
