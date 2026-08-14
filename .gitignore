@@ -1,0 +1,17 @@
+# Goのビルド成果物は環境ごとに作成できるため、Gitで管理しない
+bin/
+.cache/
+*.exe
+*.test
+*.out
+
+# 秘密値を含むローカル環境変数ファイルはGitで管理しない
+.env
+.env.*
+!.env.example
+
+# エディタやOSが作る個人環境用ファイルはGitで管理しない
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

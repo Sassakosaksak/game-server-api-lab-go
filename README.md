@@ -8,3 +8,21 @@
 4. kindでローカルKubernetesを学ぶ
 5. ECS + Fargateへデプロイする
 6. EKSも短期検証し、AWS上のKubernetesを体験する
+
+## ローカル起動
+
+```powershell
+go run ./cmd/api
+```
+
+別のPowerShellで、次のコマンドを実行してAPIを確認する。
+
+```powershell
+curl http://localhost:8080/health
+```
+
+期待する応答：
+
+```json
+{"status":"ok"}
+```
