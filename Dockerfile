@@ -4,7 +4,7 @@ FROM golang:1.26.5 AS build
 WORKDIR /src
 
 # 依存関係の取得をコード変更時の再ビルドから分離する
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
 
 COPY cmd ./cmd

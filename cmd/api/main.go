@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type healthResponse struct {
@@ -11,12 +13,12 @@ type healthResponse struct {
 }
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", healthHandler)
+	router := chi.NewRouter()
+	router.Get("/health", healthHandler)
 
 	server := &http.Server{
 		Addr:    ":8080",
-		Handler: mux,
+		Handler: router,
 	}
 
 	log.Println("APIサーバーをポート8080で起動します")
