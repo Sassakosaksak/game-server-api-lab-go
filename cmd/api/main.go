@@ -13,16 +13,21 @@ type healthResponse struct {
 }
 
 func main() {
-	router := chi.NewRouter()
-	router.Get("/health", healthHandler)
-
 	server := &http.Server{
 		Addr:    ":8080",
-		Handler: router,
+		Handler: newRouter(),
 	}
 
 	log.Println("APIサーバーをポート8080で起動します")
 	log.Fatal(server.ListenAndServe())
+}
+
+// 本番起動とテストで同じルーティング設定を使うためにRouterを作る。
+func newRouter() http.Handler {
+	router := chi.NewRouter()
+	router.Get("/health", healthHandler)
+
+	return router
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
