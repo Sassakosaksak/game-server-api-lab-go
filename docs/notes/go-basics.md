@@ -10,6 +10,26 @@ module github.com/Sassakosaksak/game-server-api-lab-go
 
 `module`は、自分のコードをimportするときの基準となる名前。Gitの接続先は`.git/config`の`origin`であり、`go.mod`ではない。
 
+## 依存パッケージの追加
+
+Goで外部パッケージを使う流れは次の通り。
+
+```text
+1. Goコードへimportを書く
+2. go get または go mod tidyを実行する
+3. Goがgo.modとgo.sumを更新する
+4. go.modとgo.sumをGitへコミットする
+```
+
+```powershell
+go get github.com/go-chi/chi/v5
+go mod tidy
+```
+
+`go get`は、C#の`dotnet add package`に近い。`go.mod`へ使うモジュールと版を追加し、モジュールを取得する。
+
+`go mod tidy`は、コードのimportを見て依存関係を整理する。importされているのに`go.mod`に無いモジュールは追加し、どこからも使われていないモジュールは削除する。必要な`go.sum`も追加・整理する。
+
 ## 実行とビルド
 
 ```text
@@ -71,3 +91,20 @@ T   : 値そのものの型
 ```
 
 `server := &http.Server{}`のようにポインタで扱うと、同じサーバー設定を複数の変数で共有できる。
+
+## 書式指定
+
+`log.Printf`や`fmt.Printf`、`t.Fatalf`では、文章内の`%`から始まる書式指定へ後ろの値を埋め込める。
+
+```go
+t.Fatalf("ステータスコード = %d, want %d", actualStatus, expectedStatus)
+```
+
+```text
+%d : 整数を10進数で表示する
+%q : 文字列をダブルクォート付きで表示する
+%s : 文字列をそのまま表示する
+%v : 型に応じた基本表示をする。errorの内容表示などに使う
+```
+
+`%q`は空文字や余計な空白も見分けやすいため、文字列を比較するテストで使いやすい。
