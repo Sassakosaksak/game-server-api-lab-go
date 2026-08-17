@@ -46,7 +46,7 @@ docker build -t game-server-api-go:local .
 作成したImageからコンテナを起動する。
 
 ```powershell
-docker run --rm --name game-server-api-go -p 8080:8080 game-server-api-go:local
+docker run --rm --name game-server-api-go -p 127.0.0.1:8080:8080 game-server-api-go:local
 ```
 
 別のPowerShellで、APIとコンテナログを確認する。
@@ -57,3 +57,38 @@ docker logs game-server-api-go
 ```
 
 コンテナを起動したPowerShellで`Ctrl + C`を押すと、コンテナは停止して自動削除される。
+
+## Docker Composeで起動
+
+`.env.example`をコピーして`.env`を作成し、`POSTGRES_PASSWORD`へ開発用パスワードを設定する。`.env`はGitへ登録しない。
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Compose設定を確認する。
+
+```powershell
+docker compose config
+```
+
+API、PostgreSQL、Redisを起動する。Windows側へ公開するのはAPIの`127.0.0.1:8080`だけで、PostgreSQLとRedisはCompose内部ネットワークだけで待ち受ける。
+
+```powershell
+docker compose up --build
+```
+
+別のPowerShellで状態とAPI応答を確認する。
+
+```powershell
+docker compose ps
+curl.exe -i http://127.0.0.1:8080/health
+```
+
+起動したPowerShellで`Ctrl + C`を押したあと、Containerとネットワークを削除する。
+
+```powershell
+docker compose down
+```
+
+`docker compose down`ではPostgreSQLの名前付きVolumeは残る。`-v`を付けるとVolumeも削除されるため、データを消したい場合だけ使う。
