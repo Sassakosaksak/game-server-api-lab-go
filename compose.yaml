@@ -2,13 +2,26 @@ services:
   api:
     build:
       context: .
+      target: api
     image: game-server-api-go:local
+    environment:
+      DATABASE_URL: postgres://gameuser:${POSTGRES_PASSWORD}@db:5432/gamedb?sslmode=disable
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       redis:
+        condition: service_healthy
+
+  migrate:
+    build:
+      context: .
+      target: migrate
+    environment:
+      DATABASE_URL: postgres://gameuser:${POSTGRES_PASSWORD}@db:5432/gamedb?sslmode=disable
+    depends_on:
+      db:
         condition: service_healthy
 
   db:

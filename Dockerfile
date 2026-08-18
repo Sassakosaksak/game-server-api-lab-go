@@ -8,12 +8,14 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY cmd ./cmd
+COPY internal ./internal
 
 # 実行用ImageへGoランタイムを持ち込まないため、単体で動くLinux実行ファイルを作る
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o /out/api ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o /out/migrate ./cmd/migrate
 
 # 実行時に必要な最小限のLinux環境だけを使う
-FROM alpine:3.22
+FROM alpine:3.22 AS api
 
 WORKDIR /app
 
@@ -22,3 +24,13 @@ COPY --from=build /out/api /app/api
 EXPOSE 8080
 
 ENTRYPOINT ["/app/api"]
+
+# Migration専用ContainerへSQLファイルと実行ファイルだけを入れる
+FROM alpine:3.22 AS migrate
+
+WORKDIR /app
+
+COPY --from=build /out/migrate /app/migrate
+COPY migrations /app/migrations
+
+ENTRYPOINT ["/app/migrate"]
