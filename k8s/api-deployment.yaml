@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-server-api
+  namespace: game-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game-server-api
+  template:
+    metadata:
+      labels:
+        app: game-server-api
+    spec:
+      containers:
+        - name: api
+          image: game-server-api-go:local
+          # kindへ読み込ませたローカルImageを使い、レジストリから取得しない。
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          # APIが応答できない状態になったPodをKubernetesが再作成するために確認する。
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          # Serviceから通信を渡してよい状態か判定するために確認する。
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 1
+            periodSeconds: 5
