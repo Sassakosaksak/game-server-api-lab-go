@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: game-server
+spec:
+  serviceName: postgres-internal
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - name: postgres-tcp
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              value: gamedb
+            - name: POSTGRES_USER
+              value: gameuser
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: game-server-database
+                  key: postgres-password
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          # PostgreSQLが応答できない状態が続く場合にPodを再作成するために確認する。
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "gameuser", "-d", "gamedb"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          # PostgreSQLが接続を受け付ける前に、次の処理へ進まないようにする。
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "gameuser", "-d", "gamedb"]
+            initialDelaySeconds: 3
+            periodSeconds: 5
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-data
