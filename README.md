@@ -72,8 +72,19 @@ $createdPlayer
 
 `$createdPlayer`へ作成されたPlayerが入り、表示すると`id`・`name`・`createdAt`を確認できる。
 
+Playerを初めて取得するとRedis MISSとなり、PostgreSQLから取得した結果をRedisへ保存する。
+
 ```powershell
 Invoke-RestMethod -Uri "http://127.0.0.1:8080/players/$($createdPlayer.id)"
+docker compose logs api --tail 20
+```
+
+同じPlayerをもう一度取得するとRedis HITとなる。
+
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:8080/players/$($createdPlayer.id)"
+docker compose logs api --tail 20
+docker compose exec redis redis-cli GET "player:$($createdPlayer.id)"
 ```
 
 起動したPowerShellで`Ctrl + C`を押したあと、Containerとネットワークを削除する。

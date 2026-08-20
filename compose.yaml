@@ -6,6 +6,7 @@ services:
     image: game-server-api-go:local
     environment:
       DATABASE_URL: postgres://gameuser:${POSTGRES_PASSWORD}@db:5432/gamedb?sslmode=disable
+      REDIS_ADDR: redis:6379
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:

@@ -17,6 +17,6 @@ type Player struct {
 
 // RepositoryはPlayerの保存先に関係なく、Handlerが必要とする操作を定義する。
 type Repository interface {
-	Create(context.Context, string) (Player, error)
-	FindByID(context.Context, string) (Player, error)
+	Create(ctx context.Context, name string) (Player, error)
+	FindByID(ctx context.Context, id string) (Player, error)
 }

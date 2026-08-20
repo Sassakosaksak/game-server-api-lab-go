@@ -2,19 +2,15 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/Sassakosaksak/game-server-api-lab-go/internal/cache"
 	"github.com/Sassakosaksak/game-server-api-lab-go/internal/database"
 	"github.com/Sassakosaksak/game-server-api-lab-go/internal/player"
-	"github.com/go-chi/chi/v5"
 )
-
-type healthResponse struct {
-	Status string `json:"status"`
-}
 
 func main() {
 	databaseURL := os.Getenv("DATABASE_URL")
@@ -28,8 +24,19 @@ func main() {
 	}
 	defer pool.Close()
 
+	redisAddress := os.Getenv("REDIS_ADDR")
+	redisClient, err := cache.OpenRedisClient(redisAddress)
+	if err != nil {
+		log.Fatalf("Redis Clientの準備に失敗しました: %v", err)
+	}
+	defer redisClient.Close()
+
+	postgresRepository := player.NewPostgresRepository(pool)
+	playerCache := player.NewRedisCache(redisClient)
+	cachedRepository := player.NewCachedRepository(postgresRepository, playerCache, 5*time.Minute)
+
 	router := newRouter()
-	registerPlayerRoutes(router, player.NewHandler(player.NewPostgresRepository(pool)))
+	registerPlayerRoutes(router, player.NewHandler(cachedRepository))
 
 	server := &http.Server{
 		Addr:    ":8080",
@@ -38,27 +45,4 @@ func main() {
 
 	log.Println("APIサーバーをポート8080で起動します")
 	log.Fatal(server.ListenAndServe())
-}
-
-// 本番起動とテストで同じルーティング設定を使うためにRouterを作る。
-func newRouter() chi.Router {
-	router := chi.NewRouter()
-	router.Get("/health", healthHandler)
-
-	return router
-}
-
-// APIの入口でルーティングをまとめ、Player機能のHTTP処理を登録する。
-func registerPlayerRoutes(router chi.Router, handler *player.Handler) {
-	router.Post("/players", handler.Create)
-	router.Get("/players/{id}", handler.Get)
-}
-
-func healthHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(healthResponse{Status: "ok"}); err != nil {
-		log.Printf("ヘルスチェック応答の書き込みに失敗しました: %v", err)
-	}
 }
