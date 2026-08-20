@@ -44,6 +44,12 @@ go build -o bin/api.exe ./cmd/api
 
 `-o`の後ろは出力先、最後の`./cmd/api`はビルド対象のGoパッケージ。
 
+```powershell
+go build ./cmd/api ./cmd/migrate
+```
+
+複数のパッケージを指定した`go build`は、ビルドできるかの確認だけを行い、実行ファイルを残さない。成功時も出力は基本的にない。
+
 ## HTTP APIの最小構成
 
 ```go
