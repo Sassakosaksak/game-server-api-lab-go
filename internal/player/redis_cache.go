@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+
+	cacheconfig "github.com/Sassakosaksak/game-server-api-lab-go/internal/cache"
 )
 
 type redisCache struct {
@@ -19,7 +21,10 @@ func NewRedisCache(client *redis.Client) Cache {
 }
 
 func (cache *redisCache) Get(ctx context.Context, id string) (Player, bool, error) {
-	value, err := cache.client.Get(ctx, playerCacheKey(id)).Bytes()
+	redisContext, cancel := context.WithTimeout(ctx, cacheconfig.RedisOperationTimeout)
+	defer cancel()
+
+	value, err := cache.client.Get(redisContext, playerCacheKey(id)).Bytes()
 	if errors.Is(err, redis.Nil) {
 		return Player{}, false, nil
 	}
@@ -41,7 +46,10 @@ func (cache *redisCache) Set(ctx context.Context, player Player, expiration time
 		return fmt.Errorf("Redisへ保存するPlayerデータを作成できませんでした: %w", err)
 	}
 
-	if err := cache.client.Set(ctx, playerCacheKey(player.ID), value, expiration).Err(); err != nil {
+	redisContext, cancel := context.WithTimeout(ctx, cacheconfig.RedisOperationTimeout)
+	defer cancel()
+
+	if err := cache.client.Set(redisContext, playerCacheKey(player.ID), value, expiration).Err(); err != nil {
 		return fmt.Errorf("RedisへPlayerを保存できませんでした: %w", err)
 	}
 

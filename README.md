@@ -87,6 +87,8 @@ docker compose logs api --tail 20
 docker compose exec redis redis-cli GET "player:$($createdPlayer.id)"
 ```
 
+Redis停止時は、Redis操作を最大200msで打ち切ってPostgreSQLへフォールバックする。キャッシュ障害でPlayer取得APIを長く待たせないための設定である。
+
 起動したPowerShellで`Ctrl + C`を押したあと、Containerとネットワークを削除する。
 
 ```powershell
